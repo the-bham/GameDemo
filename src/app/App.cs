@@ -45,6 +45,7 @@ public partial class App : CanvasLayer, IApp
   #region Nodes
 
   [Node] public IMenu Menu { get; set; } = default!;
+  [Node] public ISettingsMenu SettingsMenu { get; set; } = default!;
   [Node] public ISubViewport GamePreview { get; set; } = default!;
   [Node] public IColorRect BlankScreen { get; set; } = default!;
   [Node] public IAnimationPlayer AnimationPlayer { get; set; } = default!;
@@ -66,6 +67,10 @@ public partial class App : CanvasLayer, IApp
     Menu.LoadGame += OnLoadGame;
 
     AnimationPlayer.AnimationFinished += OnAnimationFinished;
+
+    Menu.Settings += OnSettings;
+    SettingsMenu.ExitSettingsMenu += OnMainMenu;
+    AppRepo.AppliedDisplaySettings += OnAppliedDisplaySettings;
 
     this.Provide();
   }
@@ -94,8 +99,11 @@ public partial class App : CanvasLayer, IApp
       })
       .Handle((in AppLogic.Output.SetupGameScene _) =>
       {
-        Game = Instantiator.LoadAndInstantiate<Game>(GAME_SCENE_PATH);
-        GamePreview.AddChildEx(Game);
+        if (Game == null)
+        {
+          Game = Instantiator.LoadAndInstantiate<Game>(GAME_SCENE_PATH);
+          GamePreview.AddChildEx(Game);
+        }
 
         Instantiator.SceneTree.Paused = false;
       })
@@ -103,6 +111,7 @@ public partial class App : CanvasLayer, IApp
       {
         // Load everything while we're showing a black screen, then fade in.
         HideMenus();
+        Menu.NewGameButton.GrabFocus();
         Menu.Show();
         Game.Show();
 
@@ -121,7 +130,20 @@ public partial class App : CanvasLayer, IApp
           Game.SaveFileLoaded += OnSaveFileLoaded;
           Game.LoadExistingGame();
         }
-      );
+      )
+      .Handle((in AppLogic.Output.ShowSettingsMenu _) =>
+      {
+        SettingsMenu.LoadDefaultSettings();
+        SettingsMenu.Show();
+      })
+      .Handle((in AppLogic.Output.HideSettingsMenu _) => SettingsMenu.Hide())
+      .Handle((in AppLogic.Output.HideMainMenu _) => HideMenus())
+      .Handle((in AppLogic.Output.LoadDisplaySettings _) =>
+      {
+        AppRepo.ApplyDisplaySettings(
+          AppRepo.GetSavedDisplaySettings()
+        );
+      });
 
     // Enter the first state to kick off the binding side effects.
     AppLogic.Start();
@@ -130,6 +152,10 @@ public partial class App : CanvasLayer, IApp
   public void OnNewGame() => AppLogic.Input(new AppLogic.Input.NewGame());
 
   public void OnLoadGame() => AppLogic.Input(new AppLogic.Input.LoadGame());
+
+  public void OnSettings() => AppLogic.Input(new AppLogic.Input.Settings());
+
+  public void OnMainMenu() => AppLogic.Input(new AppLogic.Input.MainMenu());
 
   public void OnAnimationFinished(StringName animation)
   {
@@ -173,7 +199,9 @@ public partial class App : CanvasLayer, IApp
     AppRepo.Dispose();
 
     Menu.NewGame -= OnNewGame;
-
+    Menu.LoadGame -= OnLoadGame;
+    Menu.Settings -= OnSettings;
+    AppRepo.AppliedDisplaySettings -= OnAppliedDisplaySettings;
     AnimationPlayer.AnimationFinished -= OnAnimationFinished;
   }
 
@@ -182,4 +210,63 @@ public partial class App : CanvasLayer, IApp
     Game.SaveFileLoaded -= OnSaveFileLoaded;
     AppLogic.Input(new AppLogic.Input.SaveFileLoaded());
   }
+
+  public void OnAppliedDisplaySettings(DisplaySettings settings)
+  {
+    GetTree().Root.Mode = settings.DisplayMode;
+    DisplayServer.WindowSetVsyncMode(settings.VSyncMode);
+    Engine.MaxFps = settings.MaxFPS;
+
+    switch (settings.Scaling3DScale)
+    {
+      case Scaling3DScale.UltraPerformance:
+        GetTree().Root.Scaling3DScale = 1.0f / 3.0f;
+        break;
+      case Scaling3DScale.Performance:
+        GetTree().Root.Scaling3DScale = 1.0f / 2.0f;
+        break;
+      case Scaling3DScale.Balanced:
+        GetTree().Root.Scaling3DScale = 1.0f / 1.7f;
+        break;
+      case Scaling3DScale.Quality:
+        GetTree().Root.Scaling3DScale = 1.0f / 1.5f;
+        break;
+      case Scaling3DScale.UltraQuality:
+        GetTree().Root.Scaling3DScale = 1.0f / 1.3f;
+        break;
+      case Scaling3DScale.Native:
+        GetTree().Root.Scaling3DScale = 1.0f;
+        break;
+    }
+
+    GetTree().Root.UseTaa = settings.Taa;
+    GetTree().Root.Scaling3DMode = settings.Scaling3DMode;
+
+    GetTree().Root.Msaa3D = settings.Msaa;
+    GetTree().Root.ScreenSpaceAA = settings.Ssaa;
+    GetTree().Root.PropagateCall("set", ["shadow_enabled", settings.Shadows]);
+
+    switch (settings.ScreenSpaceAOQuality)
+    {
+      case SSAOQuality.MEDIUM:
+        RenderingServer.EnvironmentSetSsaoQuality(RenderingServer.EnvironmentSsaoQuality.Medium, false, 0.5f, 2, 50, 300);
+        break;
+      case SSAOQuality.HIGH:
+        RenderingServer.EnvironmentSetSsaoQuality(RenderingServer.EnvironmentSsaoQuality.High, false, 0.5f, 2, 50, 300);
+        break;
+    }
+
+    switch (settings.ScreenSpaceILQuality)
+    {
+      case SSILQuality.MEDIUM:
+        RenderingServer.EnvironmentSetSsilQuality(RenderingServer.EnvironmentSsilQuality.Medium, false, 0.5f, 2, 50, 300);
+        break;
+      case SSILQuality.HIGH:
+        RenderingServer.EnvironmentSetSsilQuality(RenderingServer.EnvironmentSsilQuality.High, false, 0.5f, 2, 50, 300);
+        break;
+    }
+
+
+  }
+
 }

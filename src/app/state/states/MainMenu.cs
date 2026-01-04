@@ -9,7 +9,7 @@ public partial class AppLogic
   {
     [Meta]
     public partial record MainMenu : State,
-    IGet<Input.NewGame>, IGet<Input.LoadGame>
+    IGet<Input.NewGame>, IGet<Input.LoadGame>, IGet<Input.Settings>
     {
       public MainMenu()
       {
@@ -20,6 +20,8 @@ public partial class AppLogic
 
             Output(new Output.SetupGameScene());
 
+            Output(new Output.LoadDisplaySettings());
+
             Get<IAppRepo>().OnMainMenuEntered();
 
             Output(new Output.ShowMainMenu());
@@ -28,6 +30,8 @@ public partial class AppLogic
       }
 
       public Transition On(in Input.NewGame input) => To<LeavingMenu>();
+
+      public Transition On(in Input.Settings input) => To<SettingsMenu>();
 
       public Transition On(in Input.LoadGame input)
       {
