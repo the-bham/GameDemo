@@ -99,11 +99,8 @@ public partial class App : CanvasLayer, IApp
       })
       .Handle((in AppLogic.Output.SetupGameScene _) =>
       {
-        if (Game == null)
-        {
-          Game = Instantiator.LoadAndInstantiate<Game>(GAME_SCENE_PATH);
-          GamePreview.AddChildEx(Game);
-        }
+        Game = Instantiator.LoadAndInstantiate<Game>(GAME_SCENE_PATH);
+        GamePreview.AddChildEx(Game);
 
         Instantiator.SceneTree.Paused = false;
       })
@@ -111,7 +108,6 @@ public partial class App : CanvasLayer, IApp
       {
         // Load everything while we're showing a black screen, then fade in.
         HideMenus();
-        Menu.NewGameButton.GrabFocus();
         Menu.Show();
         Game.Show();
 
@@ -201,6 +197,7 @@ public partial class App : CanvasLayer, IApp
     Menu.NewGame -= OnNewGame;
     Menu.LoadGame -= OnLoadGame;
     Menu.Settings -= OnSettings;
+    SettingsMenu.ExitSettingsMenu -= OnMainMenu;
     AppRepo.AppliedDisplaySettings -= OnAppliedDisplaySettings;
     AnimationPlayer.AnimationFinished -= OnAnimationFinished;
   }

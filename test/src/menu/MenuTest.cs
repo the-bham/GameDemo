@@ -19,6 +19,7 @@ public class MenuTest : TestClass
 {
   private Mock<IButton> _newGameButton = default!;
   private Mock<IButton> _loadGameButton = default!;
+  private Mock<IButton> _settingsButton = default!;
   private Menu _menu = default!;
 
   public MenuTest(Node testScene) : base(testScene) { }
@@ -28,11 +29,13 @@ public class MenuTest : TestClass
   {
     _newGameButton = new Mock<IButton>();
     _loadGameButton = new Mock<IButton>();
+    _settingsButton = new Mock<IButton>();
 
     _menu = new Menu
     {
       NewGameButton = _newGameButton.Object,
-      LoadGameButton = _loadGameButton.Object
+      LoadGameButton = _loadGameButton.Object,
+      SettingsButton = _settingsButton.Object
     };
 
     _menu._Notification(-1);

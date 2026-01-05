@@ -33,8 +33,7 @@ public class MainMenuTest : TestClass
     _state.Enter();
 
     _context.Outputs.ShouldBe([
-      new AppLogic.Output.SetupGameScene(),
-      new AppLogic.Output.ShowMainMenu()
+      new AppLogic.Output.ShowMainMenu(),
     ]);
   }
 

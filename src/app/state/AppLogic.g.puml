@@ -23,13 +23,15 @@ GameDemo_AppLogic_State_SplashScreen --> GameDemo_AppLogic_State_MainMenu : Fade
 
 GameDemo_AppLogic_State_InGame : OnEnter → ShowGame
 GameDemo_AppLogic_State_InGame : OnExit → HideGame
+GameDemo_AppLogic_State_LeavingGame : OnExit → SetupGameScene
 GameDemo_AppLogic_State_LeavingGame : OnFadeOutFinished → RemoveExistingGame, SetupGameScene
 GameDemo_AppLogic_State_LeavingMenu : OnEnter → FadeToBlack
 GameDemo_AppLogic_State_LoadingSaveFile : OnEnter → StartLoadingSaveFile
-GameDemo_AppLogic_State_MainMenu : OnEnter → LoadDisplaySettings, SetupGameScene, ShowMainMenu
+GameDemo_AppLogic_State_MainMenu : OnEnter → ShowMainMenu
 GameDemo_AppLogic_State_SettingsMenu : OnEnter → HideMainMenu, ShowSettingsMenu
 GameDemo_AppLogic_State_SettingsMenu : OnExit → HideSettingsMenu
 GameDemo_AppLogic_State_SplashScreen : OnEnter → ShowSplashScreen
+GameDemo_AppLogic_State_SplashScreen : OnExit → LoadDisplaySettings, SetupGameScene
 GameDemo_AppLogic_State_SplashScreen : OnSplashScreenSkipped() → HideSplashScreen
 
 [*] --> GameDemo_AppLogic_State_SplashScreen

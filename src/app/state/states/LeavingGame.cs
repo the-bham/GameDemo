@@ -1,6 +1,7 @@
 namespace GameDemo;
 
 using Chickensoft.Introspection;
+using Chickensoft.LogicBlocks;
 
 public partial class AppLogic
 {
@@ -9,6 +10,11 @@ public partial class AppLogic
     [Meta]
     public partial record LeavingGame : State, IGet<Input.FadeOutFinished>
     {
+
+      public LeavingGame()
+      {
+        this.OnExit(() => Output(new Output.SetupGameScene()));
+      }
       public PostGameAction PostGameAction { get; set; } = PostGameAction.RestartGame;
 
       public Transition On(in Input.FadeOutFinished input)

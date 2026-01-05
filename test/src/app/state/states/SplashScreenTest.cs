@@ -34,6 +34,16 @@ public class SplashScreenTest : TestClass
   }
 
   [Test]
+  public void OnExit()
+  {
+    _state.Exit();
+    _context.Outputs.ShouldBe([
+      new AppLogic.Output.SetupGameScene(),
+      new AppLogic.Output.LoadDisplaySettings()
+      ]);
+  }
+
+  [Test]
   public void Subscribes()
   {
     _state.Attach(_context);

@@ -26,6 +26,7 @@ public class AppTest : TestClass
   private Mock<IInstantiator> _instantiator = default!;
   private Mock<IGame> _game = default!;
   private Mock<IMenu> _menu = default!;
+  private Mock<ISettingsMenu> _settings = default!;
   private Mock<ISubViewport> _gamePreview = default!;
   private Mock<IColorRect> _blankScreen = default!;
   private Mock<IAnimationPlayer> _animationPlayer = default!;
@@ -44,6 +45,7 @@ public class AppTest : TestClass
 
     _game = new();
     _menu = new();
+    _settings = new();
     _gamePreview = new();
     _blankScreen = new();
     _animationPlayer = new();
@@ -56,6 +58,7 @@ public class AppTest : TestClass
       Game = _game.Object,
       Instantiator = _instantiator.Object,
       Menu = _menu.Object,
+      SettingsMenu = _settings.Object,
       GamePreview = _gamePreview.Object,
       BlankScreen = _blankScreen.Object,
       AnimationPlayer = _animationPlayer.Object,
@@ -71,7 +74,7 @@ public class AppTest : TestClass
   [Test]
   public void Initializes()
   {
-    // Naturally, the app controls al ot of systems (mostly menus), so there's
+    // Naturally, the app controls a lot of systems (mostly menus), so there's
     // quite a bit of setup to verify.
 
     _app.AppBinding = _binding;
@@ -82,7 +85,11 @@ public class AppTest : TestClass
     _app.AppRepo.ShouldBeOfType<AppRepo>();
     _app.AppLogic.ShouldBeOfType<AppLogic>();
 
+    // _appRepo.VerifyAdd(appRepo => appRepo.AppliedDisplaySettings += _app.OnAppliedDisplaySettings);
+
     _menu.VerifyAdd(menu => menu.NewGame += _app.OnNewGame);
+    _menu.VerifyAdd(menu => menu.Settings += _app.OnSettings);
+    _settings.VerifyAdd(settings => settings.ExitSettingsMenu += _app.OnMainMenu);
 
     _animationPlayer.VerifyAdd(
       player => player.AnimationFinished += _app.OnAnimationFinished
@@ -96,7 +103,11 @@ public class AppTest : TestClass
 
     _app.OnExitTree();
 
+    // _appRepo.VerifyAdd(appRepo => appRepo.AppliedDisplaySettings -= _app.OnAppliedDisplaySettings);
+
     _menu.VerifyRemove(menu => menu.NewGame -= _app.OnNewGame);
+    _menu.VerifyRemove(menu => menu.Settings -= _app.OnSettings);
+    _settings.VerifyRemove(settings => settings.ExitSettingsMenu -= _app.OnMainMenu);
 
     _animationPlayer.VerifyRemove(
       player => player.AnimationFinished -= _app.OnAnimationFinished
@@ -255,6 +266,24 @@ public class AppTest : TestClass
     _logic.Reset();
     _logic.Setup(logic => logic.Input(It.IsAny<AppLogic.Input.LoadGame>()));
     _app.OnLoadGame();
+    _logic.VerifyAll();
+  }
+
+  [Test]
+  public void OnSettingsWorks()
+  {
+    _logic.Reset();
+    _logic.Setup(logic => logic.Input(It.IsAny<AppLogic.Input.Settings>()));
+    _app.OnSettings();
+    _logic.VerifyAll();
+  }
+
+  [Test]
+  public void OnMainMenu()
+  {
+    _logic.Reset();
+    _logic.Setup(logic => logic.Input(It.IsAny<AppLogic.Input.MainMenu>()));
+    _app.OnMainMenu();
     _logic.VerifyAll();
   }
 

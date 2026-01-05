@@ -27,6 +27,16 @@ public class LeavingGameTest : TestClass
   }
 
   [Test]
+
+  public void OnExit()
+  {
+    _state.Exit();
+    _context.Outputs.ShouldBe([
+      new AppLogic.Output.SetupGameScene()
+    ]);
+  }
+
+  [Test]
   public void OnFadeOutFinishedGoesToMainMenu()
   {
     var state = new AppLogic.State.LeavingGame()

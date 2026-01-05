@@ -18,10 +18,6 @@ public partial class AppLogic
           {
             Get<Data>().ShouldLoadExistingGame = false;
 
-            Output(new Output.SetupGameScene());
-
-            Output(new Output.LoadDisplaySettings());
-
             Get<IAppRepo>().OnMainMenuEntered();
 
             Output(new Output.ShowMainMenu());

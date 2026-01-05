@@ -14,6 +14,12 @@ public partial class AppLogic
       {
         this.OnEnter(() => Output(new Output.ShowSplashScreen()));
 
+        this.OnExit(() =>
+        {
+          Output(new Output.SetupGameScene());
+          Output(new Output.LoadDisplaySettings());
+        });
+
         OnAttach(
           () => Get<IAppRepo>().SplashScreenSkipped += OnSplashScreenSkipped
         );
