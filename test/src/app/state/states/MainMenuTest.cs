@@ -46,6 +46,14 @@ public class MainMenuTest : TestClass
   }
 
   [Test]
+  public void TransitionsOnSettings()
+  {
+    var next = _state.On(new AppLogic.Input.Settings());
+
+    next.State.ShouldBeOfType<AppLogic.State.SettingsMenu>();
+  }
+
+  [Test]
   public void LeavesMenuOnLoadGame()
   {
     var next = _state.On(new AppLogic.Input.LoadGame());

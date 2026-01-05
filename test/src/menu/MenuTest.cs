@@ -46,10 +46,13 @@ public class MenuTest : TestClass
   {
     _menu.OnReady();
     _newGameButton.VerifyAdd(menu => menu.Pressed += _menu.OnNewGamePressed);
+    _loadGameButton.VerifyAdd(menu => menu.Pressed += _menu.OnLoadGamePressed);
+    _settingsButton.VerifyAdd(menu => menu.Pressed += _menu.OnSettingsPressed);
 
     _menu.OnExitTree();
-    _newGameButton
-      .VerifyRemove(menu => menu.Pressed -= _menu.OnNewGamePressed);
+    _newGameButton.VerifyRemove(menu => menu.Pressed -= _menu.OnNewGamePressed);
+    _loadGameButton.VerifyRemove(menu => menu.Pressed -= _menu.OnLoadGamePressed);
+    _settingsButton.VerifyRemove(menu => menu.Pressed -= _menu.OnSettingsPressed);
   }
 
   [Test]
@@ -70,6 +73,18 @@ public class MenuTest : TestClass
     var signal = _menu.ToSignal(_menu, Menu.SignalName.LoadGame);
 
     _menu.OnLoadGamePressed();
+
+    await signal;
+
+    signal.IsCompleted.ShouldBeTrue();
+  }
+
+  [Test]
+  public async Task SignalSettingsButtonPressed()
+  {
+    var signal = _menu.ToSignal(_menu, Menu.SignalName.Settings);
+
+    _menu.OnSettingsPressed();
 
     await signal;
 

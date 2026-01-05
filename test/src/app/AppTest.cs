@@ -203,6 +203,18 @@ public class AppTest : TestClass
   }
 
   [Test]
+  public void ShowsSettingsMenu()
+  {
+    _settings.Setup(settings => settings.Show());
+
+    _app.OnSettings();
+
+    _binding.Output(new AppLogic.Output.ShowSettingsMenu());
+
+    _settings.VerifyAll();
+  }
+
+  [Test]
   public void FadesOut()
   {
     SetupFadeOut();
@@ -238,6 +250,20 @@ public class AppTest : TestClass
     _binding.Output(new AppLogic.Output.HideGame());
 
     VerifyFade();
+  }
+
+  [Test]
+  public void HidesMainMenu()
+  {
+    _menu.Setup(menu => menu.Hide());
+    _splash.Setup(splash => splash.Hide());
+
+    _app.OnReady();
+
+    _binding.Output(new AppLogic.Output.HideMainMenu());
+
+    _menu.VerifyAll();
+    _splash.VerifyAll();
   }
 
   [Test]
