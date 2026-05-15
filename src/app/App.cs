@@ -16,13 +16,13 @@ public partial class App : CanvasLayer, IApp
 
   #region Constants
 
-  public const string GAME_SCENE_PATH = "res://src/game/Game.tscn";
+  public const string GAME_SCENE_PATH = "res://src/farming_rpg/game/FarmingGame.tscn";
 
   #endregion Constants
 
   #region External
 
-  public IGame Game { get; set; } = default!;
+  public IFarmingGame Game { get; set; } = default!;
   public IInstantiator Instantiator { get; set; } = default!;
 
   #endregion External
@@ -94,7 +94,7 @@ public partial class App : CanvasLayer, IApp
       })
       .Handle((in AppLogic.Output.SetupGameScene _) =>
       {
-        Game = Instantiator.LoadAndInstantiate<Game>(GAME_SCENE_PATH);
+        Game = Instantiator.LoadAndInstantiate<FarmingGame>(GAME_SCENE_PATH);
         GamePreview.AddChildEx(Game);
 
         Instantiator.SceneTree.Paused = false;
@@ -164,6 +164,8 @@ public partial class App : CanvasLayer, IApp
     Splash.Hide();
     Menu.Hide();
   }
+
+  public void OnEnterTree() => Engine.MaxFps = 60;
 
   public void OnExitTree()
   {

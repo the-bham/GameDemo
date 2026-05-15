@@ -24,7 +24,7 @@ public class AppTest : TestClass
   private AppLogic.IFakeBinding _binding = default!;
 
   private Mock<IInstantiator> _instantiator = default!;
-  private Mock<IGame> _game = default!;
+  private Mock<IFarmingGame> _game = default!;
   private Mock<IMenu> _menu = default!;
   private Mock<ISubViewport> _gamePreview = default!;
   private Mock<IColorRect> _blankScreen = default!;

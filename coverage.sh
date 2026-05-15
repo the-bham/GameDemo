@@ -35,7 +35,7 @@ coverlet \
   --exclude-by-file "**/Godot.SourceGenerators/**/*.cs" \
   --exclude-by-file "**/Chickensoft.*/**/*.cs" \
   --exclude-by-file "**/*.g.cs" \
-  --exclude-assemblies-without-sources "missingall" \
+  --exclude-assemblies-without-sources "MissingAll" \
   --skipautoprops
 
 # Projects included via <ProjectReference> will be collected in code coverage.

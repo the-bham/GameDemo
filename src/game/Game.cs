@@ -77,213 +77,213 @@ public partial class Game : Node3D, IGame
 
   public void Setup()
   {
-    FileSystem = new FileSystem();
+	FileSystem = new FileSystem();
 
-    SaveFilePath = FileSystem.Path.Join(OS.GetUserDataDir(), SAVE_FILE_NAME);
+	SaveFilePath = FileSystem.Path.Join(OS.GetUserDataDir(), SAVE_FILE_NAME);
 
-    GameRepo = new GameRepo();
-    GameLogic = new GameLogic();
-    GameLogic.Set(GameRepo);
-    GameLogic.Set(AppRepo);
+	GameRepo = new GameRepo();
+	GameLogic = new GameLogic();
+	GameLogic.Set(GameRepo);
+	GameLogic.Set(AppRepo);
 
-    // This is how to create JsonSerializerOptions for use with LogicBlocks
-    // and the Chickensoft serialization utilities.
-    var resolver = new SerializableTypeResolver();
-    // Tell our type type resolver about the Godot-specific converters.
-    GodotSerialization.Setup();
+	// This is how to create JsonSerializerOptions for use with LogicBlocks
+	// and the Chickensoft serialization utilities.
+	var resolver = new SerializableTypeResolver();
+	// Tell our type type resolver about the Godot-specific converters.
+	GodotSerialization.Setup();
 
-    var upgradeDependencies = new Blackboard();
+	var upgradeDependencies = new Blackboard();
 
-    // Create a standard JsonSerializerOptions with our introspective type
-    // resolver and the logic blocks converter.
-    JsonOptions = new JsonSerializerOptions
-    {
-      Converters = {
-        new SerializableTypeConverter(upgradeDependencies)
-      },
-      TypeInfoResolver = resolver,
-      WriteIndented = true
-    };
+	// Create a standard JsonSerializerOptions with our introspective type
+	// resolver and the logic blocks converter.
+	JsonOptions = new JsonSerializerOptions
+	{
+	  Converters = {
+		new SerializableTypeConverter(upgradeDependencies)
+	  },
+	  TypeInfoResolver = resolver,
+	  WriteIndented = true
+	};
 
-    DeathMenu.TryAgain += OnStart;
-    DeathMenu.MainMenu += OnMainMenu;
-    DeathMenu.TransitionCompleted += OnDeathMenuTransitioned;
+	DeathMenu.TryAgain += OnStart;
+	DeathMenu.MainMenu += OnMainMenu;
+	DeathMenu.TransitionCompleted += OnDeathMenuTransitioned;
 
-    WinMenu.MainMenu += OnMainMenu;
-    WinMenu.TransitionCompleted += OnWinMenuTransitioned;
+	WinMenu.MainMenu += OnMainMenu;
+	WinMenu.TransitionCompleted += OnWinMenuTransitioned;
 
-    PauseMenu.MainMenu += OnMainMenu;
-    PauseMenu.Resume += OnResume;
-    PauseMenu.TransitionCompleted += OnPauseMenuTransitioned;
-    PauseMenu.Save += OnPauseMenuSaveRequested;
+	PauseMenu.MainMenu += OnMainMenu;
+	PauseMenu.Resume += OnResume;
+	PauseMenu.TransitionCompleted += OnPauseMenuTransitioned;
+	PauseMenu.Save += OnPauseMenuSaveRequested;
 
-    GameChunk = new SaveChunk<GameData>(
-      (chunk) =>
-      {
-        var gameData = new GameData()
-        {
-          MapData = chunk.GetChunkSaveData<MapData>(),
-          PlayerData = chunk.GetChunkSaveData<PlayerData>(),
-          PlayerCameraData = chunk.GetChunkSaveData<PlayerCameraData>()
-        };
+	GameChunk = new SaveChunk<GameData>(
+	  (chunk) =>
+	  {
+		var gameData = new GameData()
+		{
+		  MapData = chunk.GetChunkSaveData<MapData>(),
+		  PlayerData = chunk.GetChunkSaveData<PlayerData>(),
+		  PlayerCameraData = chunk.GetChunkSaveData<PlayerCameraData>()
+		};
 
-        return gameData;
-      },
-        onLoad: (chunk, data) =>
-        {
-          chunk.LoadChunkSaveData(data.MapData);
-          chunk.LoadChunkSaveData(data.PlayerData);
-          chunk.LoadChunkSaveData(data.PlayerCameraData);
-        }
-      );
+		return gameData;
+	  },
+		onLoad: (chunk, data) =>
+		{
+		  chunk.LoadChunkSaveData(data.MapData);
+		  chunk.LoadChunkSaveData(data.PlayerData);
+		  chunk.LoadChunkSaveData(data.PlayerCameraData);
+		}
+	  );
 
-    // Calling Provide() triggers the Setup/OnResolved on dependent
-    // nodes who depend on the values we provide. This means that
-    // all nodes registering save managers will have already registered
-    // their relevant save managers by now. This is useful when restoring state
-    // while loading an existing save file.
+	// Calling Provide() triggers the Setup/OnResolved on dependent
+	// nodes who depend on the values we provide. This means that
+	// all nodes registering save managers will have already registered
+	// their relevant save managers by now. This is useful when restoring state
+	// while loading an existing save file.
   }
 
   public void OnResolved()
   {
-    SaveFile = new SaveFile<GameData>(
-      root: GameChunk,
-      onSave: async data =>
-      {
-        // Save the game data to disk.
-        var json = JsonSerializer.Serialize(data, JsonOptions);
-        await FileSystem.File.WriteAllTextAsync(SaveFilePath, json);
-      },
-      onLoad: async () =>
-      {
-        // Load the game data from disk.
-        if (!FileSystem.File.Exists(SaveFilePath))
-        {
-          GD.Print("No save file to load :'(");
-          return null;
-        }
+	SaveFile = new SaveFile<GameData>(
+	  root: GameChunk,
+	  onSave: async data =>
+	  {
+		// Save the game data to disk.
+		var json = JsonSerializer.Serialize(data, JsonOptions);
+		await FileSystem.File.WriteAllTextAsync(SaveFilePath, json);
+	  },
+	  onLoad: async () =>
+	  {
+		// Load the game data from disk.
+		if (!FileSystem.File.Exists(SaveFilePath))
+		{
+		  GD.Print("No save file to load :'(");
+		  return null;
+		}
 
-        var json = await FileSystem.File.ReadAllTextAsync(SaveFilePath);
-        return JsonSerializer.Deserialize<GameData>(json, JsonOptions);
-      }
-    );
+		var json = await FileSystem.File.ReadAllTextAsync(SaveFilePath);
+		return JsonSerializer.Deserialize<GameData>(json, JsonOptions);
+	  }
+	);
 
-    GameBinding = GameLogic.Bind();
-    GameBinding
-      .Handle(
-        (in GameLogic.Output.StartGame _) =>
-        {
-          PlayerCamera.UsePlayerCamera();
-          InGameUi.Show();
-        })
-      .Handle(
-        (in GameLogic.Output.SetPauseMode output) =>
-          CallDeferred(nameof(SetPauseMode), output.IsPaused)
-      )
-      .Handle(
-        (in GameLogic.Output.CaptureMouse output) =>
-          Input.MouseMode = output.IsMouseCaptured
-            ? Input.MouseModeEnum.Captured
-            : Input.MouseModeEnum.Visible
-      )
-      .Handle((in GameLogic.Output.ShowLostScreen _) =>
-      {
-        DeathMenu.Show();
-        DeathMenu.FadeIn();
-        DeathMenu.Animate();
-      })
-      .Handle((in GameLogic.Output.ExitLostScreen _) => DeathMenu.FadeOut())
-      .Handle((in GameLogic.Output.ShowPauseMenu _) =>
-      {
-        PauseMenu.Show();
-        PauseMenu.FadeIn();
-      })
-      .Handle((in GameLogic.Output.ShowWonScreen _) =>
-      {
-        WinMenu.Show();
-        WinMenu.FadeIn();
-      })
-      .Handle((in GameLogic.Output.ExitWonScreen _) => WinMenu.FadeOut())
-      .Handle((in GameLogic.Output.ExitPauseMenu _) => PauseMenu.FadeOut())
-      .Handle((in GameLogic.Output.HidePauseMenu _) => PauseMenu.Hide())
-      .Handle((in GameLogic.Output.ShowPauseSaveOverlay _) =>
-        PauseMenu.OnSaveStarted()
-      )
-      .Handle((in GameLogic.Output.HidePauseSaveOverlay _) =>
-        PauseMenu.OnSaveCompleted()
-      )
-      .Handle((in GameLogic.Output.StartSaving _) =>
-        SaveFile.Save().ContinueWith(
-          // Saving is async. The game node is always around, so kicking off
-          // an async process is safe. Plus, we block input while saving, so
-          // no interruptions.
-          (task) => GameLogic.Input(new GameLogic.Input.SaveCompleted())
-        )
-      );
+	GameBinding = GameLogic.Bind();
+	GameBinding
+	  .Handle(
+		(in GameLogic.Output.StartGame _) =>
+		{
+		  PlayerCamera.UsePlayerCamera();
+		  InGameUi.Show();
+		})
+	  .Handle(
+		(in GameLogic.Output.SetPauseMode output) =>
+		  CallDeferred(nameof(SetPauseMode), output.IsPaused)
+	  )
+	  .Handle(
+		(in GameLogic.Output.CaptureMouse output) =>
+		  Input.MouseMode = output.IsMouseCaptured
+			? Input.MouseModeEnum.Captured
+			: Input.MouseModeEnum.Visible
+	  )
+	  .Handle((in GameLogic.Output.ShowLostScreen _) =>
+	  {
+		DeathMenu.Show();
+		DeathMenu.FadeIn();
+		DeathMenu.Animate();
+	  })
+	  .Handle((in GameLogic.Output.ExitLostScreen _) => DeathMenu.FadeOut())
+	  .Handle((in GameLogic.Output.ShowPauseMenu _) =>
+	  {
+		PauseMenu.Show();
+		PauseMenu.FadeIn();
+	  })
+	  .Handle((in GameLogic.Output.ShowWonScreen _) =>
+	  {
+		WinMenu.Show();
+		WinMenu.FadeIn();
+	  })
+	  .Handle((in GameLogic.Output.ExitWonScreen _) => WinMenu.FadeOut())
+	  .Handle((in GameLogic.Output.ExitPauseMenu _) => PauseMenu.FadeOut())
+	  .Handle((in GameLogic.Output.HidePauseMenu _) => PauseMenu.Hide())
+	  .Handle((in GameLogic.Output.ShowPauseSaveOverlay _) =>
+		PauseMenu.OnSaveStarted()
+	  )
+	  .Handle((in GameLogic.Output.HidePauseSaveOverlay _) =>
+		PauseMenu.OnSaveCompleted()
+	  )
+	  .Handle((in GameLogic.Output.StartSaving _) =>
+		SaveFile.Save().ContinueWith(
+		  // Saving is async. The game node is always around, so kicking off
+		  // an async process is safe. Plus, we block input while saving, so
+		  // no interruptions.
+		  (task) => GameLogic.Input(new GameLogic.Input.SaveCompleted())
+		)
+	  );
 
-    // Trigger the first state's OnEnter callbacks so our bindings run.
-    // Keeps everything in sync from the moment we start!
-    GameLogic.Start();
+	// Trigger the first state's OnEnter callbacks so our bindings run.
+	// Keeps everything in sync from the moment we start!
+	GameLogic.Start();
 
-    GameLogic.Input(
-      new GameLogic.Input.Initialize(NumCoinsInWorld: Map.GetCoinCount())
-    );
+	GameLogic.Input(
+	  new GameLogic.Input.Initialize(NumCoinsInWorld: Map.GetCoinCount())
+	);
 
-    this.Provide();
+	this.Provide();
   }
 
   public override void _Input(InputEvent @event)
   {
-    if (Input.IsActionJustPressed("ui_cancel"))
-    {
-      GameLogic.Input(new GameLogic.Input.PauseButtonPressed());
-    }
+	if (Input.IsActionJustPressed("ui_cancel"))
+	{
+	  GameLogic.Input(new GameLogic.Input.PauseButtonPressed());
+	}
   }
 
   public void OnMainMenu() =>
-    GameLogic.Input(new GameLogic.Input.GoToMainMenu());
+	GameLogic.Input(new GameLogic.Input.GoToMainMenu());
 
   public void OnResume() =>
-    GameLogic.Input(new GameLogic.Input.PauseButtonPressed());
+	GameLogic.Input(new GameLogic.Input.PauseButtonPressed());
 
   public void OnStart() =>
-    GameLogic.Input(new GameLogic.Input.Start());
+	GameLogic.Input(new GameLogic.Input.Start());
 
   public void OnWinMenuTransitioned() =>
-    GameLogic.Input(new GameLogic.Input.WinMenuTransitioned());
+	GameLogic.Input(new GameLogic.Input.WinMenuTransitioned());
 
   public void OnPauseMenuTransitioned() =>
-    GameLogic.Input(new GameLogic.Input.PauseMenuTransitioned());
+	GameLogic.Input(new GameLogic.Input.PauseMenuTransitioned());
 
   public void OnPauseMenuSaveRequested() =>
-    GameLogic.Input(new GameLogic.Input.SaveRequested());
+	GameLogic.Input(new GameLogic.Input.SaveRequested());
 
   public void OnDeathMenuTransitioned() =>
-    GameLogic.Input(new GameLogic.Input.DeathMenuTransitioned());
+	GameLogic.Input(new GameLogic.Input.DeathMenuTransitioned());
 
   public void OnExitTree()
   {
-    DeathMenu.TryAgain -= OnStart;
-    DeathMenu.MainMenu -= OnMainMenu;
-    DeathMenu.TransitionCompleted -= OnDeathMenuTransitioned;
-    WinMenu.MainMenu -= OnMainMenu;
-    PauseMenu.MainMenu -= OnMainMenu;
-    PauseMenu.Resume -= OnResume;
-    PauseMenu.TransitionCompleted -= OnPauseMenuTransitioned;
+	DeathMenu.TryAgain -= OnStart;
+	DeathMenu.MainMenu -= OnMainMenu;
+	DeathMenu.TransitionCompleted -= OnDeathMenuTransitioned;
+	WinMenu.MainMenu -= OnMainMenu;
+	PauseMenu.MainMenu -= OnMainMenu;
+	PauseMenu.Resume -= OnResume;
+	PauseMenu.TransitionCompleted -= OnPauseMenuTransitioned;
 
-    GameLogic.Stop();
-    GameBinding.Dispose();
-    GameRepo.Dispose();
+	GameLogic.Stop();
+	GameBinding.Dispose();
+	GameRepo.Dispose();
   }
 
   public void LoadExistingGame()
   {
-    SaveFile.Load()
-      .ContinueWith((_) => CallDeferred(nameof(FinishedLoadingSaveFile)));
+	SaveFile.Load()
+	  .ContinueWith((_) => CallDeferred(nameof(FinishedLoadingSaveFile)));
   }
 
   private void FinishedLoadingSaveFile()
-    => EmitSignal(SignalName.SaveFileLoaded);
+	=> EmitSignal(SignalName.SaveFileLoaded);
 
   private void SetPauseMode(bool isPaused) => GetTree().Paused = isPaused;
 }

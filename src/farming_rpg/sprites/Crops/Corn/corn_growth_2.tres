@@ -1,0 +1,10 @@
+[gd_resource type="AtlasTexture" format=3 uid="uid://cbt2mfd1naft8"]
+
+[ext_resource type="Texture2D" uid="uid://bpyodwwywcyhf" path="res://src/farming_rpg/sprites/Crops/Crops.png" id="1_rqkt7"]
+
+[sub_resource type="GDScript" id="GDScript_xxc0j"]
+
+[resource]
+atlas = ExtResource("1_rqkt7")
+region = Rect2(53, 24, 8, 7)
+script = SubResource("GDScript_xxc0j")

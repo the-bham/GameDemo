@@ -1,0 +1,7 @@
+[gd_resource type="AtlasTexture" format=3 uid="uid://yyu53i7hmv7h"]
+
+[ext_resource type="Texture2D" uid="uid://bpyodwwywcyhf" path="res://src/farming_rpg/sprites/Crops/Crops.png" id="1_42w56"]
+
+[resource]
+atlas = ExtResource("1_42w56")
+region = Rect2(19, 17, 10, 14)

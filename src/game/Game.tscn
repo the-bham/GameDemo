@@ -34,7 +34,7 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 visible = false
 
-[node name="SubViewport" parent="InGameUi/HBoxContainer/MarginContainer/HBoxContainer/MarginContainer/SubViewportContainer" index="0"]
+[node name="SubViewport" parent="InGameUi/HBoxContainer/MarginContainer/HBoxContainer/MarginContainer/SubViewportContainer" parent_id_path=PackedInt32Array(1148283132, 1264910715) index="0" unique_id=1968428710]
 render_target_update_mode = 0
 
 [node name="InGameAudio" parent="." unique_id=1399134061 instance=ExtResource("6_wnbqg")]

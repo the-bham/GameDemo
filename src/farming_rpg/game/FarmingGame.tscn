@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://dwxuoshsis2iu"]
+
+[ext_resource type="Script" uid="uid://3ww15exccq7f" path="res://src/farming_rpg/game/FarmingGame.cs" id="1_8gfag"]
+[ext_resource type="PackedScene" uid="uid://cvbd1kmf312qu" path="res://src/farming_rpg/player/Player2D.tscn" id="2_h3od0"]
+
+[node name="Game" type="Node2D" unique_id=1504856763]
+process_mode = 3
+texture_filter = 1
+script = ExtResource("1_8gfag")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1085208183]
+texture_filter = 1
+position = Vector2(960, 540)
+zoom = Vector2(4, 4)
+
+[node name="Player" parent="." unique_id=310294861 instance=ExtResource("2_h3od0")]
+unique_name_in_owner = true
+position = Vector2(960, 540)

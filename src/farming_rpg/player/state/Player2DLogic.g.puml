@@ -1,0 +1,11 @@
+@startuml Player2DLogic
+state "Player2DLogic State" as GameDemo_Player2DLogic_State {
+  state "Alive" as GameDemo_Player2DLogic_State_Alive
+}
+
+GameDemo_Player2DLogic_State_Alive --> GameDemo_Player2DLogic_State_Alive : PhysicsTick
+
+GameDemo_Player2DLogic_State_Alive : OnPhysicsTick → MovementComputed
+
+[*] --> GameDemo_Player2DLogic_State_Alive
+@enduml
