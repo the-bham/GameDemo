@@ -10,5 +10,7 @@ public partial class Player2DLogic
       Vector2 Direction, double Delta);
 
     public readonly record struct VelocityChanged(Vector2 Velocity);
+
+    public readonly record struct Animate(string AnimationName);
   }
 }

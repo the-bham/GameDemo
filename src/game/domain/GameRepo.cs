@@ -160,7 +160,7 @@ public class GameRepo : IGameRepo
   public void StartCoinCollection(ICoin coin)
   {
     _coinsBeingCollected++;
-    _numCoinsCollected.Value = _numCoinsCollected.Value + 1;
+    _numCoinsCollected.Value++;
     CoinCollectionStarted?.Invoke(coin);
   }
 

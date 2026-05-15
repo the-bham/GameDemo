@@ -32,6 +32,12 @@ IProvide<Player2DLogic.Settings>
 
   #endregion Exports
 
+  #region Nodes
+
+  [Node("%AnimatedSprite")] public IAnimatedSprite2D AnimatedSprite { get; set; } = default!;
+
+  #endregion Nodes
+
 
   #region Dependencies
 
@@ -92,9 +98,18 @@ IProvide<Player2DLogic.Settings>
 
     PlayerBinding
       .Handle((in Player2DLogic.Output.MovementComputed output) =>
-      Velocity = output.Velocity)
+      {
+        if (output.Direction.Length() > 0)
+        {
+          FacingDirection = output.Direction;
+        }
+
+        Velocity = output.Velocity;
+      })
       .Handle((in Player2DLogic.Output.VelocityChanged output) =>
       Velocity = output.Velocity
+      ).Handle((in Player2DLogic.Output.Animate output) =>
+        AnimatedSprite.Play(output.AnimationName)
       );
 
     // Allow the player model to lookup our state machine and bind to it.
@@ -109,16 +124,13 @@ IProvide<Player2DLogic.Settings>
     Player2DLogic.Input(new Player2DLogic.Input.PhysicsTick(delta));
 
     MoveAndSlide();
+
+    Player2DLogic.Input(new Player2DLogic.Input.Animate(FacingDirection));
   }
   public Vector2 GetGlobalInputVector()
   {
     var moveInput = Input.GetVector("move_left", "move_right", "move_up", "move_down");
 
-    if (moveInput != null)
-    {
-      FacingDirection = moveInput;
-    }
-
-    return FacingDirection;
+    return moveInput;
   }
 }

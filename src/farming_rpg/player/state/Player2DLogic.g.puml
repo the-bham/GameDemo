@@ -3,8 +3,10 @@ state "Player2DLogic State" as GameDemo_Player2DLogic_State {
   state "Alive" as GameDemo_Player2DLogic_State_Alive
 }
 
+GameDemo_Player2DLogic_State_Alive --> GameDemo_Player2DLogic_State_Alive : Animate
 GameDemo_Player2DLogic_State_Alive --> GameDemo_Player2DLogic_State_Alive : PhysicsTick
 
+GameDemo_Player2DLogic_State_Alive : OnAnimate → Animate
 GameDemo_Player2DLogic_State_Alive : OnPhysicsTick → MovementComputed
 
 [*] --> GameDemo_Player2DLogic_State_Alive
